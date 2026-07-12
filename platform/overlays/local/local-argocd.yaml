@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: platform
+  namespace: argocd
+spec:
+  disableAdmin: false
+  applicationSet:
+    enabled: true
+  ha:
+    enabled: false
+  repo:
+    replicas: 1
+  server:
+    replicas: 1
+    host: argocd.localhost
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: null
+        nginx.ingress.kubernetes.io/backend-protocol: null
+        nginx.ingress.kubernetes.io/force-ssl-redirect: null
+      tls: null
+    grpc:
+      host: ""
+      ingress:
+        enabled: false
+        ingressClassName: null
+        annotations: null
+        tls: null
+  notifications:
+    enabled: true
+    replicas: 1
+  prometheus:
+    enabled: false
+  monitoring:
+    enabled: false
+  oidcConfig: ""
+  rbac:
+    defaultPolicy: role:none
+    policy: ""

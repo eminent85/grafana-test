@@ -1,0 +1,7 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: argocd-operator-controller-manager
+  namespace: argocd-operator-system
+$patch: delete
+

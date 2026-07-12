@@ -1,0 +1,56 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: platform-oidc
+  namespace: argocd
+$patch: delete
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: platform-gitops-repository
+  namespace: argocd
+$patch: delete
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-workloads
+  namespace: argocd
+$patch: delete
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-root
+  namespace: argocd
+$patch: delete
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: platform-server
+  namespace: argocd
+$patch: delete
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: platform-repo-server
+  namespace: argocd
+$patch: delete
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: platform-applicationset-controller
+  namespace: argocd
+$patch: delete
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: platform-notifications-controller
+  namespace: argocd
+$patch: delete
+

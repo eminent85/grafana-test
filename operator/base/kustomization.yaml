@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd-operator-system
+namePrefix: argocd-operator-
+resources:
+  - ../../vendor/argocd-operator/crd
+  - ../../vendor/argocd-operator/rbac
+  - ../../vendor/argocd-operator/manager
+  - ../../vendor/argocd-operator/webhook
+  - ../../vendor/argocd-operator/certmanager
+  - pdb.yaml
+patches:
+  - path: namespace.yaml
+  - path: manager-patch.yaml
+  - path: webhook-certificate-patch.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: argocd
+      app.kubernetes.io/managed-by: kustomize

@@ -1,0 +1,12 @@
+dependencies:
+  certManager:
+    version: v1.21.0
+    chart: oci://quay.io/jetstack/charts/cert-manager
+    chartDigest: sha256:cd55fea42658e54abc25e85a0bc1de229925a5006445f916bfd2c6dc80ac3613
+  argocdOperator:
+    version: v0.15.0-1
+    source: https://github.com/argoproj-labs/argocd-operator/archive/refs/tags/v0.15.0-1.tar.gz
+    archiveSha256: 5b0fd3d88d94816ee583b81166b46b1e67ebfdf17ef7fe1ce700268f97c82ac4
+    image: quay.io/argoprojlabs/argocd-operator@sha256:223ad82fb697471ede79201c4a042115c9ca5c00a172d5bdcd5a780e58c46c79
+  kubernetes:
+    minimumVersion: "1.29"

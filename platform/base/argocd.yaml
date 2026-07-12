@@ -1,0 +1,129 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: platform
+spec:
+  disableAdmin: true
+  applicationInstanceLabelKey: argocd.argoproj.io/instance
+  resourceExclusions: |
+    - apiGroups:
+        - ""
+      kinds:
+        - Endpoints
+      clusters:
+        - "*"
+  controller:
+    processors:
+      operation: 10
+      status: 20
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    logLevel: info
+    logFormat: json
+  applicationSet:
+    enabled: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    logLevel: info
+    logFormat: json
+  ha:
+    enabled: true
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+  repo:
+    replicas: 3
+    mountSAToken: false
+    verifyTLS: true
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    logLevel: info
+    logFormat: json
+  server:
+    replicas: 3
+    insecure: true
+    host: argocd.example.com
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-production
+        nginx.ingress.kubernetes.io/backend-protocol: HTTP
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      tls:
+        - hosts:
+            - argocd.example.com
+          secretName: argocd-server-tls
+    grpc:
+      host: argocd-grpc.example.com
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-production
+          nginx.ingress.kubernetes.io/backend-protocol: GRPC
+        tls:
+          - hosts:
+              - argocd-grpc.example.com
+            secretName: argocd-grpc-tls
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    logLevel: info
+    logFormat: json
+  notifications:
+    enabled: true
+    replicas: 2
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    logLevel: info
+  prometheus:
+    enabled: true
+  monitoring:
+    enabled: true
+  oidcConfig: |
+    name: Corporate OIDC
+    issuer: https://id.example.com
+    clientID: argocd
+    clientSecret: $oidc.clientSecret
+    requestedScopes:
+      - openid
+      - profile
+      - email
+      - groups
+  rbac:
+    defaultPolicy: role:none
+    policyMatcherMode: glob
+    scopes: "[groups]"
+    policy: |
+      p, role:none, applications, get, */*, deny
+      g, argocd-admins, role:admin
+      g, argocd-readers, role:readonly

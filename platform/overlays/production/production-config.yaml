@@ -1,0 +1,105 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: platform
+  namespace: argocd
+spec:
+  server:
+    host: CHANGE_ME_ARGOCD_HOST
+    ingress:
+      ingressClassName: CHANGE_ME_INGRESS_CLASS
+      annotations:
+        cert-manager.io/cluster-issuer: CHANGE_ME_CLUSTER_ISSUER
+      tls:
+        - hosts:
+            - CHANGE_ME_ARGOCD_HOST
+          secretName: argocd-server-tls
+    grpc:
+      host: CHANGE_ME_ARGOCD_GRPC_HOST
+      ingress:
+        ingressClassName: CHANGE_ME_INGRESS_CLASS
+        annotations:
+          cert-manager.io/cluster-issuer: CHANGE_ME_CLUSTER_ISSUER
+        tls:
+          - hosts:
+              - CHANGE_ME_ARGOCD_GRPC_HOST
+            secretName: argocd-grpc-tls
+  oidcConfig: |
+    name: Corporate OIDC
+    issuer: CHANGE_ME_OIDC_ISSUER
+    clientID: CHANGE_ME_OIDC_CLIENT_ID
+    clientSecret: $oidc.clientSecret
+    requestedScopes:
+      - openid
+      - profile
+      - email
+      - groups
+  rbac:
+    policy: |
+      p, role:none, applications, get, */*, deny
+      g, CHANGE_ME_OIDC_ADMIN_GROUP, role:admin
+      g, CHANGE_ME_OIDC_READER_GROUP, role:readonly
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: platform-oidc
+  namespace: argocd
+spec:
+  secretStoreRef:
+    name: CHANGE_ME_CLUSTER_SECRET_STORE
+  data:
+    - secretKey: oidc.clientSecret
+      remoteRef:
+        key: CHANGE_ME_OIDC_REMOTE_KEY
+        property: clientSecret
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: platform-gitops-repository
+  namespace: argocd
+spec:
+  secretStoreRef:
+    name: CHANGE_ME_CLUSTER_SECRET_STORE
+  target:
+    template:
+      data:
+        url: CHANGE_ME_GITOPS_REPO_URL
+  data:
+    - secretKey: username
+      remoteRef:
+        key: CHANGE_ME_GIT_REMOTE_KEY
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: CHANGE_ME_GIT_REMOTE_KEY
+        property: password
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-workloads
+  namespace: argocd
+spec:
+  sourceRepos:
+    - CHANGE_ME_GITOPS_REPO_URL
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-root
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: CHANGE_ME_GITOPS_REPO_URL
+        revision: CHANGE_ME_GIT_REVISION
+        directories:
+          - path: CHANGE_ME_GIT_ROOT_PATH/*
+  template:
+    spec:
+      source:
+        repoURL: CHANGE_ME_GITOPS_REPO_URL
+        targetRevision: CHANGE_ME_GIT_REVISION
+

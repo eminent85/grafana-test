@@ -1,0 +1,16 @@
+resources:
+- manager.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- files:
+  - controller_manager_config.yaml
+  name: manager-config
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- digest: sha256:223ad82fb697471ede79201c4a042115c9ca5c00a172d5bdcd5a780e58c46c79
+  name: controller
+  newName: quay.io/argoprojlabs/argocd-operator

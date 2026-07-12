@@ -1,0 +1,30 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.34.2
+      - uses: yokawasa/action-setup-kube-tools@v0.12.0
+        with:
+          kubeconform: "0.7.0"
+          conftest: "0.62.0"
+          yq: "4.47.2"
+      - run: pip install yamllint==1.37.1
+      - run: make render
+      - name: Verify the template renders with explicit CI-only values
+        run: sed -i 's/CHANGE_ME_[A-Z_]*/ci-placeholder/g' build/platform.yaml
+      - run: ./scripts/preflight.sh build/platform.yaml
+      - run: ./scripts/validate.sh
