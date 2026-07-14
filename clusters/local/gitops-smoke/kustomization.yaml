@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: gitops-smoke
 resources:
   - smoke-config.yaml
+  - prune-test-config.yaml
