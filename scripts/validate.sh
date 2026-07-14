@@ -46,6 +46,11 @@ if [[ "${mode}" == "local" ]]; then
     echo "error: local AppProject must not permit arbitrary destination namespaces" >&2
     exit 1
   fi
+
+  grep -Fq -- "value: argocd,gitops-smoke" build/operator-local.yaml || {
+    echo "error: local operator watch list must include the approved workload namespace" >&2
+    exit 1
+  }
 fi
 
 if command -v yamllint >/dev/null; then

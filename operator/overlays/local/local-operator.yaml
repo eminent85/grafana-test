@@ -5,4 +5,11 @@ metadata:
   namespace: argocd-operator-system
 spec:
   replicas: 1
-
+  template:
+    spec:
+      containers:
+        - name: manager
+          env:
+            - name: WATCH_NAMESPACE
+              value: argocd,gitops-smoke
+              valueFrom: null

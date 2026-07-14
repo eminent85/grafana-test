@@ -38,5 +38,5 @@ Use the `rancher-desktop` context and keep the bootstrap boundary separate from 
 6. Add a disposable second ConfigMap in one commit, remove it in a later commit, and confirm foreground pruning deletes it.
 7. Submit an Application that targets a namespace absent from the AppProject allowlist and confirm Argo CD rejects it.
 
-Acceptance requires anonymous repository access, no cluster-resource permission, no wildcard destination namespace, and
-no Argo CD ownership of the operator or control-plane bootstrap resources.
+Acceptance requires anonymous repository access, an operator cache limited to approved namespaces, no cluster-resource
+permission, no wildcard destination namespace, and no Argo CD ownership of operator or control-plane bootstrap resources.

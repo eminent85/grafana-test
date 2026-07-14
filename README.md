@@ -93,9 +93,10 @@ This avoids asking Argo CD to prune its own controller or operator.
 The local Argo CD instance is intentionally namespace-scoped. To onboard another namespace:
 
 1. Add a Namespace manifest to `platform/overlays/local/` with the label `argocd.argoproj.io/managed-by: argocd`.
-2. Add that exact namespace to `AppProject/platform-workloads` in `local-gitops.yaml`; never add a wildcard destination.
-3. Add a same-named package below `clusters/local/`, because the directory basename becomes the Application and namespace.
-4. Merge and push the Git change, then run `make local-bootstrap` once to establish the namespace and its operator-managed
+2. Add the namespace to the comma-separated `WATCH_NAMESPACE` allowlist in `operator/overlays/local/local-operator.yaml`.
+3. Add that exact namespace to `AppProject/platform-workloads` in `local-gitops.yaml`; never add a wildcard destination.
+4. Add a same-named package below `clusters/local/`, because the directory basename becomes the Application and namespace.
+5. Merge and push the Git change, then run `make local-bootstrap` once to establish the namespace and its operator-managed
    RBAC. Subsequent changes inside that package reconcile automatically from Git.
 
 The local cluster still requires cert-manager because the operator uses a namespace-local certificate for its webhook:
