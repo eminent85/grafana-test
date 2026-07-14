@@ -34,13 +34,13 @@ local-validate: local-preflight ## Validate the Rancher Desktop manifests
 bootstrap: preflight ## Install operator, wait, then install Argo CD
 	$(KUBECTL) apply --server-side --force-conflicts -f build/operator.yaml
 	$(KUBECTL) rollout status deployment/argocd-operator-controller-manager -n argocd-operator-system --timeout=5m
-	$(KUBECTL) apply --server-side -f build/platform.yaml
+	$(KUBECTL) apply --server-side --force-conflicts -f build/platform.yaml
 	./scripts/status.sh
 
 local-bootstrap: local-preflight ## Install local Argo CD and its GitOps bootstrap resources
 	$(KUBECTL) apply --server-side --force-conflicts -f build/operator-local.yaml
 	$(KUBECTL) rollout status deployment/argocd-operator-controller-manager -n argocd-operator-system --timeout=5m
-	$(KUBECTL) apply --server-side -f build/platform-local.yaml
+	$(KUBECTL) apply --server-side --force-conflicts -f build/platform-local.yaml
 	./scripts/status.sh local
 
 status: ## Wait for the operator and Argo CD control plane

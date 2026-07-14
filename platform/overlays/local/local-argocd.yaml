@@ -11,6 +11,7 @@ spec:
     enabled: false
   repo:
     replicas: 1
+    verifytls: false
   server:
     replicas: 1
     host: argocd.localhost

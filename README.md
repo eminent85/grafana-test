@@ -79,6 +79,10 @@ The local overlay disables Redis HA, production PDBs, OIDC, External Secrets, Pr
 the UI through Traefik at `http://argocd.localhost` and keeps the local admin account enabled for development. Do not use
 the local overlay in a shared or production cluster.
 
+Strict TLS verification between Argo CD components and the operator-generated repo-server certificate is disabled only in
+the local overlay because that self-signed certificate does not contain the generated Kubernetes Service DNS name. Git
+traffic to GitHub continues to use normal HTTPS certificate verification.
+
 The local root ApplicationSet anonymously polls the public `main` branch every three minutes and generates one Argo CD
 Application for every Kustomize package below `clusters/local/`. Generated Applications prune resources removed from Git
 and self-heal live drift. The initial `clusters/local/gitops-smoke` package writes a ConfigMap into the `gitops-smoke`
