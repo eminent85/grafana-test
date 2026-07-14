@@ -35,7 +35,7 @@ spec:
         cpu: 500m
         memory: 512Mi
     logLevel: info
-    logFormat: json
+    logformat: json
   ha:
     enabled: true
     resources:
@@ -47,8 +47,8 @@ spec:
         memory: 1Gi
   repo:
     replicas: 3
-    mountSAToken: false
-    verifyTLS: true
+    mountsatoken: false
+    verifytls: true
     resources:
       requests:
         cpu: 250m
