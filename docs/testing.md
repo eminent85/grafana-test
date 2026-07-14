@@ -25,3 +25,18 @@ Prometheus Operator, and the selected ingress controller first.
 Acceptance requires no unresolved placeholders, mutable operator image, plaintext credential, deprecated API warning,
 unavailable control-plane endpoint, or unintended prune.
 
+## Rancher Desktop GitOps acceptance test
+
+Use the `rancher-desktop` context and keep the bootstrap boundary separate from Git-managed workloads.
+
+1. Push the proposed `clusters/local/gitops-smoke` package and local overlay changes to `main`.
+2. Run `make local-validate`, review `make local-diff`, and run `make local-bootstrap`.
+3. Confirm `Application/gitops-smoke` is `Synced` and `Healthy`, then confirm `ConfigMap/gitops-smoke` exists in its
+   namespace. `make local-status` performs these checks.
+4. Change the ConfigMap value in Git and confirm the cluster receives it within two three-minute polling intervals.
+5. Patch the live ConfigMap and confirm self-healing restores the Git value.
+6. Add a disposable second ConfigMap in one commit, remove it in a later commit, and confirm foreground pruning deletes it.
+7. Submit an Application that targets a namespace absent from the AppProject allowlist and confirm Argo CD rejects it.
+
+Acceptance requires anonymous repository access, no cluster-resource permission, no wildcard destination namespace, and
+no Argo CD ownership of the operator or control-plane bootstrap resources.

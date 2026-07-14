@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-workloads
+  namespace: argocd
+spec:
+  sourceRepos:
+    - https://github.com/eminent85/grafana-test.git
+  destinations:
+    - namespace: gitops-smoke
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist: []
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-root
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/eminent85/grafana-test.git
+        revision: main
+        requeueAfterSeconds: 180
+        directories:
+          - path: clusters/local/*
+  template:
+    metadata:
+      labels:
+        platform.example.com/environment: local
+    spec:
+      source:
+        repoURL: https://github.com/eminent85/grafana-test.git
+        targetRevision: main

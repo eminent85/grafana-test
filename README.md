@@ -9,12 +9,14 @@ The deployment has two ownership boundaries:
 
 1. `operator/base/` installs the pinned operator CRDs and controller into `argocd-operator-system`. The operator watches only
    the `argocd` namespace.
-2. `platform/` creates an HA `ArgoCD` instance, OIDC and repository secret integrations, restricted RBAC, TLS ingresses,
-   Prometheus resources, and a root ApplicationSet.
+2. `platform/` creates an `ArgoCD` instance, OIDC and repository secret integrations, restricted RBAC, ingresses,
+   monitoring resources, and a root ApplicationSet. Production uses HA components; the Rancher Desktop overlay uses
+   single replicas.
 
-The root ApplicationSet discovers `clusters/production/*` in the configured Git repository. Do **not** put this
-repository's operator or platform bootstrap packages below that path. Allowing Argo CD to prune its own operator
-creates an unsafe circular dependency.
+The production root ApplicationSet discovers `clusters/production/*`; the Rancher Desktop overlay discovers
+`clusters/local/*` from `https://github.com/eminent85/grafana-test.git`. Do **not** put this repository's operator or
+platform bootstrap packages below either path. Allowing Argo CD to prune its own operator creates an unsafe circular
+dependency.
 
 ## Prerequisites
 
@@ -64,10 +66,37 @@ make bootstrap
 
 ### Rancher Desktop
 
-For the single-node K3s cluster supplied by Rancher Desktop, use `make local-render` and `make local-bootstrap`. The local
-overlay disables Redis HA, production PDBs, OIDC, External Secrets, Prometheus integration, TLS, and the root ApplicationSet.
-It exposes the UI through Traefik at `http://argocd.localhost` and keeps the local admin account enabled for development.
-Do not use the local overlay in a shared or production cluster.
+For the single-node K3s cluster supplied by Rancher Desktop, use the local workflow:
+
+```bash
+make local-validate
+make local-diff
+make local-bootstrap
+make local-status
+```
+
+The local overlay disables Redis HA, production PDBs, OIDC, External Secrets, Prometheus integration, and TLS. It exposes
+the UI through Traefik at `http://argocd.localhost` and keeps the local admin account enabled for development. Do not use
+the local overlay in a shared or production cluster.
+
+The local root ApplicationSet anonymously polls the public `main` branch every three minutes and generates one Argo CD
+Application for every Kustomize package below `clusters/local/`. Generated Applications prune resources removed from Git
+and self-heal live drift. The initial `clusters/local/gitops-smoke` package writes a ConfigMap into the `gitops-smoke`
+namespace and provides an end-to-end reconciliation check.
+
+The operator, Argo CD instance, AppProject, ApplicationSet, and managed Namespace definitions remain bootstrap-owned and
+must be applied with `make local-bootstrap` after they change. Argo CD owns only the contents below `clusters/local/`.
+This avoids asking Argo CD to prune its own controller or operator.
+
+### Add a local workload namespace
+
+The local Argo CD instance is intentionally namespace-scoped. To onboard another namespace:
+
+1. Add a Namespace manifest to `platform/overlays/local/` with the label `argocd.argoproj.io/managed-by: argocd`.
+2. Add that exact namespace to `AppProject/platform-workloads` in `local-gitops.yaml`; never add a wildcard destination.
+3. Add a same-named package below `clusters/local/`, because the directory basename becomes the Application and namespace.
+4. Merge and push the Git change, then run `make local-bootstrap` once to establish the namespace and its operator-managed
+   RBAC. Subsequent changes inside that package reconcile automatically from Git.
 
 The local cluster still requires cert-manager because the operator uses a namespace-local certificate for its webhook:
 
@@ -77,8 +106,9 @@ helm upgrade --install cert-manager oci://quay.io/jetstack/charts/cert-manager \
   --set crds.enabled=true --set prometheus.enabled=false --wait
 ```
 
-`make validate` always performs deterministic Kustomize renders. It additionally runs `yamllint`, `kubeconform`, and
-`conftest` when installed. CI installs these tools and validates every change.
+`make validate` and `make local-validate` always perform deterministic Kustomize renders. They additionally run `yamllint`
+and `kubeconform` when installed. Production validation also runs `conftest`; the intentionally non-TLS local ingress is
+excluded from the production-only policy. CI installs these tools and validates both overlays on every change.
 
 ## Identity and break-glass access
 

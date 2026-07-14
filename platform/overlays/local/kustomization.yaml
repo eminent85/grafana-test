@@ -2,7 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
+  - gitops-smoke-namespace.yaml
 patches:
   - path: local-argocd.yaml
+  - path: local-gitops.yaml
   - path: delete-production-resources.yaml
-

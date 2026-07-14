@@ -28,3 +28,4 @@ jobs:
         run: sed -i 's/CHANGE_ME_[A-Z_]*/ci-placeholder/g' build/platform.yaml
       - run: ./scripts/preflight.sh build/platform.yaml
       - run: ./scripts/validate.sh
+      - run: make local-validate

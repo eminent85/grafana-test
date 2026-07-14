@@ -12,20 +12,6 @@ metadata:
   namespace: argocd
 $patch: delete
 ---
-apiVersion: argoproj.io/v1alpha1
-kind: AppProject
-metadata:
-  name: platform-workloads
-  namespace: argocd
-$patch: delete
----
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: platform-root
-  namespace: argocd
-$patch: delete
----
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -53,4 +39,3 @@ metadata:
   name: platform-notifications-controller
   namespace: argocd
 $patch: delete
-
